@@ -1,0 +1,11 @@
+# Daily pipeline output — not tracked in git
+output/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env

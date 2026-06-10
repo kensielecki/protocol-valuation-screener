@@ -692,8 +692,8 @@ def build_sidebar_html(asset_meta):
     Assets grouped as DeFi first, then Equities.
     Each item has a colour swatch, name, and type badge.
     """
-    defi_items = [(n, m) for n, m in asset_meta.items() if m["type"] == "defi"]
-    eq_items   = [(n, m) for n, m in asset_meta.items() if m["type"] == "equity"]
+    defi_items = sorted([(n, m) for n, m in asset_meta.items() if m["type"] == "defi"],  key=lambda x: x[0].lower())
+    eq_items   = sorted([(n, m) for n, m in asset_meta.items() if m["type"] == "equity"], key=lambda x: x[0].lower())
 
     def item_html(name, meta):
         colour    = meta["colour"]
@@ -707,7 +707,7 @@ def build_sidebar_html(asset_meta):
         else:
             mom_html = '<span class="mom-flat">—</span>'
         return (
-            f'<div class="legend-item active" data-name="{name}" '
+            f'<div class="legend-item" data-name="{name}" '
             f'onclick="toggleAsset(this)">'
             f'<span class="swatch" style="background:{colour}"></span>'
             f'<span class="lname">{name}</span>'
@@ -1024,7 +1024,7 @@ HTML_TEMPLATE = """\
 
   <!-- ── Legend sidebar ── -->
   <div class="legend-col" id="legend-col">
-    <div class="legend-col-hdr">Assets</div>
+    <div class="legend-col-hdr" style="display:flex;align-items:center;justify-content:space-between;"><span>Assets</span><button id="toggle-all-btn" onclick="toggleAll()" style="font-family:inherit;font-size:10px;letter-spacing:0.06em;background:transparent;border:1px solid var(--border-col);border-radius:4px;color:var(--muted-col);padding:3px 8px;cursor:pointer;">Select All</button></div>
     <div class="legend-items" id="legend-items">
 {sidebar_html}
     </div>
@@ -1040,7 +1040,7 @@ const CHART_IDS       = ["chart1", "chart2", "chart3", "chart4", "chart5"];
 const LINE_CHART_IDS  = ["chart1", "chart2", "chart3"];
 
 // Source of truth for which assets are currently visible.
-let visibleSet = new Set(Object.keys(ASSET_META));
+let visibleSet = new Set(["Hyperliquid","Aave","Uniswap V3","NVDA","MSFT","COIN"]);
 
 // ── Theme definitions ──────────────────────────────────────────────────────
 const THEMES = {{
@@ -1110,6 +1110,17 @@ function setVisible(predicate) {{
     }});
     updateCharts();
     updateSidebar();
+}}
+
+function toggleAll() {{
+    var btn = document.getElementById('toggle-all-btn');
+    var allNames = Object.keys(ASSET_META);
+    if (visibleSet.size === allNames.length) {{
+        visibleSet = new Set(); if (btn) btn.textContent = 'Select All';
+    }} else {{
+        visibleSet = new Set(allNames); if (btn) btn.textContent = 'Deselect All';
+    }}
+    updateCharts(); updateSidebar(); activateBtn(null);
 }}
 
 function filterAll(el) {{
@@ -1204,6 +1215,10 @@ function switchTheme(el) {{
     // Reflect active/inactive state on the theme button itself
     el.classList.toggle('active', activeTheme === 'terminal');
 }}
+
+document.addEventListener('DOMContentLoaded', function() {{
+    updateCharts(); updateSidebar();
+}});
 </script>
 
 </body>
